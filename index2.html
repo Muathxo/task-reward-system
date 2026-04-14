@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Task Reward System</title>
+
+<style>
+body {
+    font-family: Arial;
+    margin: 0;
+    background: #f4f6f9;
+}
+
+header {
+    background: #4CAF50;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+.box {
+    flex: 1;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+input, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.task {
+    background: #eee;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 6px;
+}
+
+.small {
+    font-size: 12px;
+    color: gray;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Smart Task Reward System</h1>
+</header>
+
+<div class="container">
+
+<!-- PARENT -->
+<div class="box">
+    <h2>Parent Panel</h2>
+
+    <input id="taskInput" placeholder="Enter task">
+    <input id="pointsInput" type="number" placeholder="Points">
+
+    <button onclick="addTask()">Add Task</button>
+
+    <h3>All Tasks</h3>
+    <div id="parentTasks"></div>
+</div>
+
+<!-- CHILD -->
+<div class="box">
+    <h2>Child Panel</h2>
+    <div id="childTasks"></div>
+
+    <h3>Upload Proof</h3>
+    <input type="file" accept="image/*" capture="environment" id="fileInput">
+    <button onclick="uploadProof()">Upload</button>
+
+    <h3>Points: <span id="points">0</span></h3>
+</div>
+
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let points = parseInt(localStorage.getItem("points")) || 0;
+
+function save() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    localStorage.setItem("points", points);
+    render();
+}
+
+function addTask() {
+    let t = document.getElementById("taskInput").value;
+    let p = document.getElementById("pointsInput").value;
+
+    if (!t || !p) return;
+
+    tasks.push({ text: t, points: parseInt(p), done: false });
+    save();
+}
+
+function completeTask(index) {
+    if (!tasks[index].done) {
+        tasks[index].done = true;
+        points += tasks[index].points;
+        save();
+    }
+}
+
+function uploadProof() {
+    let file = document.getElementById("fileInput").files[0];
+    if (!file) return alert("Select image first!");
+
+    alert("Proof uploaded (demo) ✔️");
+}
+
+function render() {
+    let parentDiv = document.getElementById("parentTasks");
+    let childDiv = document.getElementById("childTasks");
+
+    parentDiv.innerHTML = "";
+    childDiv.innerHTML = "";
+
+    tasks.forEach((t, i) => {
+        parentDiv.innerHTML += `
+            <div class="task">
+                ${t.text} - ${t.points} pts
+                <div class="small">Status: ${t.done ? "Done" : "Pending"}</div>
+            </div>
+        `;
+
+        childDiv.innerHTML += `
+            <div class="task">
+                ${t.text} - ${t.points} pts
+                <button onclick="completeTask(${i})">
+                    Complete Task
+                </button>
+            </div>
+        `;
+    });
+
+    document.getElementById("points").innerText = points;
+}
+
+render();
+</script>
+
+</body>
+</html>
