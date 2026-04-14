@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Kid Panel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="box">
+    <h2>🧒 Kid Dashboard</h2>
+
+    <h3>Points: <span id="score">0</span></h3>
+
+    <div id="list"></div>
+
+    <a href="index.html" class="btn">Back</a>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+let score = 0;
+
+function complete(i){
+    if(!tasks[i].done){
+        tasks[i].done = true;
+        score += Number(tasks[i].p);
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+        document.getElementById("score").innerText = score;
+        render();
+    }
+}
+
+function render(){
+    let div = document.getElementById("list");
+    div.innerHTML = "";
+
+    tasks.forEach((x,i)=>{
+        div.innerHTML += `
+        <div class="task">
+        ${x.t} - ${x.p}
+        <button onclick="complete(${i})">Complete</button>
+        </div>`;
+    });
+}
+
+render();
+</script>
+
+</body>
+</html>
