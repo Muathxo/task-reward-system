@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Parent Panel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="box">
+    <h2>👨‍👩‍👧 Parent Dashboard</h2>
+
+    <input id="task" placeholder="Task">
+    <input id="points" type="number" placeholder="Points">
+
+    <button onclick="addTask()">Add Task</button>
+
+    <div id="list"></div>
+
+    <a href="index.html" class="btn">Back</a>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+function addTask(){
+    let t = document.getElementById("task").value;
+    let p = document.getElementById("points").value;
+
+    tasks.push({t,p,done:false});
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    render();
+}
+
+function render(){
+    let div = document.getElementById("list");
+    div.innerHTML = "";
+
+    tasks.forEach((x,i)=>{
+        div.innerHTML += `
+        <div class="task">${x.t} - ${x.p} ⭐</div>`;
+    });
+}
+
+render();
+</script>
+
+</body>
+</html>
