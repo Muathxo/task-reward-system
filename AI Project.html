@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Luxury Task Reward System</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #1e1e2f, #2b5876, #4e4376);
+    color: white;
+}
+
+/* HEADER */
+header {
+    text-align: center;
+    padding: 20px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* NAV */
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(45deg, #00c6ff, #0072ff);
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.1);
+}
+
+/* CONTAINER */
+.container {
+    padding: 20px;
+}
+
+/* GLASS CARD */
+.card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* INPUTS */
+input, select {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 10px;
+    border: none;
+    width: 200px;
+}
+
+/* TASK */
+.task {
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding: 10px 0;
+}
+
+/* IMAGE */
+.preview {
+    width: 100px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+/* HIDDEN */
+.hidden {
+    display: none;
+}
+
+/* STATS */
+.stat {
+    font-size: 20px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* GLOW TEXT */
+.glow {
+    color: #00eaff;
+    text-shadow: 0 0 10px #00eaff;
+}
+</style>
+</head>
+
+<body>
+
+<header class="glow">
+💎 Smart Reward System (Luxury Edition)
+</header>
+
+<nav>
+    <button onclick="showPage('parent')">👨‍👩‍👧 Parent</button>
+    <button onclick="showPage('child')">🧒 Child</button>
+</nav>
+
+<!-- ================= PARENT ================= -->
+<div id="parent" class="container">
+
+    <div class="card">
+        <h3>✨ Create Task</h3>
+        <input type="text" id="taskName" placeholder="Task Name">
+        <input type="number" id="taskPoints" placeholder="Points">
+        <button onclick="addTask()">Add</button>
+    </div>
+
+    <div class="card">
+        <h3>📸 Pending Approvals</h3>
+        <div id="pendingList"></div>
+    </div>
+
+    <div class="card">
+        <h3>💰 Total Points</h3>
+        <div class="stat glow" id="totalPoints">0</div>
+    </div>
+
+</div>
+
+<!-- ================= CHILD ================= -->
+<div id="child" class="container hidden">
+
+    <div class="card">
+        <h3>📋 Tasks</h3>
+        <div id="taskList"></div>
+    </div>
+
+    <div class="card">
+        <h3>📸 Submit Proof</h3>
+
+        <select id="taskSelect"></select><br>
+
+        <video id="video" width="220" autoplay></video><br>
+        <button onclick="startCamera()">Start Camera</button>
+        <button onclick="capturePhoto()">Capture</button><br>
+
+        <input type="file" id="fileInput"><br>
+
+        <button onclick="submitTask()">Submit</button>
+
+        <div id="previewContainer"></div>
+    </div>
+
+    <div class="card">
+        <h3>📊 Weekly Progress</h3>
+        <div class="stat">Tasks: <span id="weeklyTasks">0</span></div>
+        <div class="stat glow">Points: <span id="weeklyPoints">0</span></div>
+    </div>
+
+</div>
+
+<script>
+let tasks = [];
+let submissions = [];
+let points = 0;
+let weeklyTasks = 0;
+let weeklyPoints = 0;
+
+let capturedImage = null;
+
+/* SWITCH */
+function showPage(page) {
+    document.getElementById("parent").classList.add("hidden");
+    document.getElementById("child").classList.add("hidden");
+    document.getElementById(page).classList.remove("hidden");
+}
+
+/* ADD TASK */
+function addTask() {
+    let name = document.getElementById("taskName").value;
+    let pts = document.getElementById("taskPoints").value;
+
+    if (!name || !pts) return alert("Fill all fields");
+
+    tasks.push({name, pts});
+    updateTaskList();
+}
+
+/* UPDATE TASKS */
+function updateTaskList() {
+    let taskList = document.getElementById("taskList");
+    let taskSelect = document.getElementById("taskSelect");
+
+    taskList.innerHTML = "";
+    taskSelect.innerHTML = "";
+
+    tasks.forEach((t, i) => {
+        taskList.innerHTML += `<div class="task">${t.name} - ${t.pts} pts</div>`;
+        taskSelect.innerHTML += `<option value="${i}">${t.name}</option>`;
+    });
+}
+
+/* CAMERA */
+function startCamera() {
+    navigator.mediaDevices.getUserMedia({video:true})
+    .then(stream => {
+        document.getElementById("video").srcObject = stream;
+    });
+}
+
+function capturePhoto() {
+    let video = document.getElementById("video");
+    let canvas = document.createElement("canvas");
+    canvas.width = 220;
+    canvas.height = 160;
+    let ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
+
+    capturedImage = canvas.toDataURL();
+
+    document.getElementById("previewContainer").innerHTML =
+        `<img src="${capturedImage}" class="preview">`;
+}
+
+/* SUBMIT */
+function submitTask() {
+    let taskIndex = document.getElementById("taskSelect").value;
+    let file = document.getElementById("fileInput").files[0];
+
+    if (file) {
+        let reader = new FileReader();
+        reader.onload = e => saveSubmission(taskIndex, e.target.result);
+        reader.readAsDataURL(file);
+    } else if (capturedImage) {
+        saveSubmission(taskIndex, capturedImage);
+    } else {
+        alert("Add image");
+    }
+}
+
+function saveSubmission(taskIndex, image) {
+    submissions.push({taskIndex, image, status:"pending"});
+    renderPending();
+    alert("Submitted 🚀");
+}
+
+/* APPROVE */
+function renderPending() {
+    let list = document.getElementById("pendingList");
+    list.innerHTML = "";
+
+    submissions.forEach((s,i) => {
+        if (s.status === "pending") {
+            list.innerHTML += `
+            <div class="task">
+                <img src="${s.image}" class="preview"><br>
+                ${tasks[s.taskIndex].name}<br>
+                <button onclick="approve(${i})">Approve</button>
+            </div>`;
+        }
+    });
+}
+
+function approve(i) {
+    let sub = submissions[i];
+    sub.status = "approved";
+
+    let task = tasks[sub.taskIndex];
+
+    let aiScore = Math.floor(Math.random()*5)+1;
+    let earned = task.pts * (aiScore/5);
+
+    points += Math.round(earned);
+    weeklyPoints += Math.round(earned);
+    weeklyTasks++;
+
+    document.getElementById("totalPoints").innerText = points;
+    document.getElementById("weeklyPoints").innerText = weeklyPoints;
+    document.getElementById("weeklyTasks").innerText = weeklyTasks;
+
+    alert("🤖 AI Rating: " + aiScore + "/5");
+
+    renderPending();
+}
+</script>
+
+</body>
+</html>
